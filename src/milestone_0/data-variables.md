@@ -202,10 +202,11 @@ contract MyMapping {
   uint256 e; // storage slot 4
   uint256 f; // storage slot 5
   mapping(address => uint256) private balance; // storage slot 6
+  mapping(string => uint256) private strbalance; // storage slot 6
 
   constructor() {
-    balance[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4] = 9; // RED
-    balance[address(0x03)] = 10; // GREEN
+    strbalance["aaa"] = 9; // RED
+    balance[address(0x1)] = 7;
   }
 
   //*** NEWLY ADDED FUNCTION ***//
@@ -236,6 +237,39 @@ contract MyMapping {
     // CALL HELPER FUNCTION TO GET SLOT
 
     (, slot) = getStorageSlot(_key);
+
+    assembly {
+    // Loads the value stored in the slot
+      value := sload(slot)
+    }
+  }
+
+  //*** NEWLY ADDED FUNCTION ***//
+  function getStringStorageSlot(string memory key)
+  public
+  pure
+  returns (uint256 balanceMappingSlot, bytes32 slot)
+  {
+    assembly {
+    // `.slot` returns the state variable (strbalance) location within the storage slots.
+      balanceMappingSlot := strbalance.slot
+    }
+    slot = keccak256(
+      abi.encodePacked(
+        abi.encodePacked(key),
+        bytes32(abi.encode(balanceMappingSlot))
+      )
+    );
+  }
+
+  function getStringValue(string memory _key)
+  public
+  view
+  returns (bytes32 slot, uint256 value)
+  {
+    // CALL HELPER FUNCTION TO GET SLOT
+
+    (, slot) = getStringStorageSlot(_key);
 
     assembly {
     // Loads the value stored in the slot

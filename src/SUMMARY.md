@@ -5,9 +5,9 @@
 # Milestone 0. Background
 - [Introduction to Markets](milestone_0/data-types.md)
 - [Constant Function Market Maker](milestone_0/data-variables.md)
-- [Uniswap V3](milestone_0/uniswap-v3.md)
+- [Uniswap V3](milestone_0/logic-tpes.md)
 - [Development Environment](milestone_0/data-modifier.md)
-- [What We Will Build](milestone_0/what-we-will-build.md)
+- [What We Will Build](milestone_0/functions.md)
 
 # Milestone 1. First Swap
 - [Introduction](milestone_1/introduction.md)
