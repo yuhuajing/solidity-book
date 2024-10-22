@@ -13,15 +13,8 @@
   - continue：跳出当前循环，立即进入下一个循环
   - break：终止当前循环
 - try()catch{}
-   - [异常捕获](./try-catch.md)
+   - [异常捕获](./errors-check.md)
 - 三元操作符
-```solidity
-    function temperature(uint a,uint b)public pure returns (uint){
-       return a>b?a:b;
-    }
-```
-
-
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.26;

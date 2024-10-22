@@ -238,128 +238,91 @@ contract payer {
   }
 }
 ```
-## 同名重载 overload
-solidity支持同名函数，不同输入参数的重载函数，因为在opcode层通过keccak256编译后的selector不同，因此可以支持函数的重载。
-```solidity
-    function temperature(uint a,uint b)public pure returns (uint){
-       return a>b?a:b; //输入参数不同，进行hash后的selector也不同，因此实现函数的重载
-    }
-    function temperature(uint8 a)public pure returns (uint8){
-       return a;
-    }
-    function temperature(uint256 a)public pure returns (uint256){
-       return a;
-    }
-```
-## [函数调用](https://www.rareskills.io/post/delegatecall)
-
-
-
-## 调用其他合约
-### Call
-1. 如果知道对方合约的源代码或者ABI的值的话，可以在本合约中写入想调用的合约代码，然后通过指定本合约内的想调用的合约名称和链上合约地址调用合约函数<kbd>_Name(_Address).func()</kbd>
+## [函数选择器](https://www.rareskills.io/post/function-selector)
+- solidity在opcode层通过`bytes4(keccak256(abi.encodePacked(functionName)))`计算函数选择器
+- 因此，solidity支持同名不同参数的函数
+- 函数之间可以通过合约|抽象合约|接口合约直接调用
+- 函数通过 selector 调用
+  - abi.encodePacked
+  - abi.encodeWithSelector
+  - abi.encodeWithSignature
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
-contract OtherContract {
-    constructor()payable{}
-    uint256 private _x = 0; 
-    event receiveLog(uint amount, uint gas);
-    event fallbackLog(uint amount, uint gas);
-    receive()external payable{
-        emit receiveLog(msg.value, gasleft());
-    }
-    fallback() external payable{
-         emit fallbackLog(msg.value, gasleft());
-    }
+contract SelectorTest {
+  uint256 public x;
+  event Sig(bytes4 sig);
 
-    function setX(uint256 x) external payable{
-        _x = x;
-    }
+  function foo(uint256 num) public {
+    emit Sig(msg.sig); //this.foo.selector
+    x += num;
+  }
 
-    function getX() external view returns(uint x){
-        x = _x;
+  function func(uint256 num) external {
+    x += num;
+  }
+
+  function func(uint256 num, bool flag) external {
+    if (flag) {
+      x += num;
     }
+  }
+
+  function getSelectorOfFoo() external pure returns (bytes4) {
+    return this.foo.selector; // 0xc2985578
+  }
 }
 
-contract CallOtherContract {
-    constructor()payable{}
-    function callsetX(address payable _addr,uint256 x) external payable{
-        OtherContract(_addr).setX(x);
-    }
+contract CallFoo {
+  event Sig(bytes4 sig);
 
-    function callgetX(address payable _addr) external view returns(uint){
-       return OtherContract(_addr).getX();
-    }
-}
-```
-2. 如果不清楚合约源码或ABI的情况下，可以通过call函数调用合约。
->_addr.call{value:,gas:}(abi.encodeWithSignature("函数签名", 逗号分隔的具体参数))
->例如：abi.encodeWithSignature("f(uint256,address)", _x, _addr)
-> 如果调用不存在的函数，则会触发调用合约中的fallback函数
-```solidity
-contract CallOtherContract {
-    constructor()payable{}
-    // 定义Response事件，输出call返回的结果success和data
-    event Response(bool success, bytes data);
-    function callsetX(address payable _addr,uint256 x) external payable{
-   (bool success, bytes memory data) = _addr.call{value: msg.value}(
-        abi.encodeWithSignature("setX(uint256)", x)
+  function callFooLowLevel(SelectorTest _contract, uint256 num) external {
+    //  _contract.foo(num);
+    // bytes4 fooSelector = 0xc2985578;
+    emit Sig(msg.sig); // this.callFooLowLevel.selector
+    bytes4 fooSelector = SelectorTest.foo.selector;
+    (bool ok, ) = address(_contract).call(
+      abi.encodePacked(fooSelector, num)
     );
-
-    emit Response(success, data);
-    }
-
-    function callgetX(address payable _addr) external payable returns(uint256) {
-       (,bytes memory data) = _addr.call{value: msg.value}(abi.encodeWithSignature("getX()"));
-       return abi.decode(data, (uint256));
-    }
+    // | (bool ok, ) = address(_contract).call(abi.encodeWithSelector(fooSelector, num));| (bool ok, ) = address(_contract).call(abi.encodeWithSignature("foo(uint256)", num));
+    require(ok, "call failed");
+  }
 }
 ```
-
-### delegateCall
-1. 在执行Call的时候，合约B会把自己的状态复制到C执行，因此修改的是C的状态。C的context是B.
-
-A -Call- > B -Call-> C
-
-对于B，context是A，因此 msg.sender=A
-
-对于C，contest是B，因此 msg.sender=B
-
-2. 但是A用delegateCall通过B去调用C的合约代码时，B会将C的context复制执行一份到B，因此修改的是B的状态，B的context 是 A
-
-A -Call- > B -DelegateCall-> C
-
-3. delegatecall不支持传输token，不能指定value值。
-
+### selector
+- 选择器和函数名、函数参数类型相关，和函数&参数的修饰符无关
+- 计算选择器时，函数参数之间无空格
+- Internal|Private函数不允许外部调用
+- 使用4个字节的函数选择器降低 msg.data 的size(函数名称可以无限长，选择器就时4bytes)
+- 函数选择器不会和fallback()进行匹配，只有在全部的功能函数没匹配上的时候，才会调用fallback()函数
 ```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.25;
 
-contract OtherContract {
-    uint public num;
-    address public owner;
-    function setNum(uint _num) external {
-        num = _num; 
-        owner = msg.sender;
-    }
-}
+contract FunctionSignatureTest {
+    function foo() external {}
 
-contract CallOtherContract {
-   uint public num;
-    address public owner;
+    function point(uint256 x, uint256 y) external {}
 
-    function callsetX(address _addr,uint _num) external payable{
-        (bool success, ) = _addr.call{value:msg.value,gas:23000}(
-            abi.encodeWithSignature("setNum(uint256)", _num)
+    function setName(string memory name) external {}
+
+    function testSignatures() external pure returns (bool) {
+        // NOTE: Casting to bytes4 takes the first 4 bytes
+        // and removes the rest
+
+        assert(
+            bytes4(keccak256(abi.encodePacked("foo()"))) == this.foo.selector
         );
-    }
-
-    function delegatecallsetX(address _addr,uint _num) external payable{
-        (bool success, ) = _addr.delegatecall{gas:23000}(
-            abi.encodeWithSignature("setNum(uint256)", _num)
+        assert(
+            bytes4(keccak256("point(uint256,uint256)")) == this.point.selector
         );
+        assert(bytes4(keccak256("setName(string)")) == this.setName.selector);
+
+        return true;
     }
 }
 ```
+### Tools
+[函数在线计算选择器](https://www.evm-function-selector.click/)
+[函数选择器数据库](https://www.4byte.directory/)
