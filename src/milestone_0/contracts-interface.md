@@ -1,38 +1,41 @@
+# 接口
+- 接口只能定义函数骨架 
+- 接口通过<kbd>interface</kbd>关键字修饰
 
-### 接口
-接口通过<kbd>interface</kbd>关键字修饰，内部所有函数必须都是未完成的函数，并且标注external供外部继承调用。
-
-接口是合约功能的骨架，定义了合约内部需要实现的全部函数方法，知道了接口，就知道了合约内部的函数调用。
-
-1. 接口合约内部不能定义状态变量
-2. 继承接口必须实现内部的全部函数
-3. 接口合约内部不能包含构造函数
-4. 接口不能继承出接口外的其他合约
-5. 接口内部的函数必须全部是external并且不能包含函数体{}
+## 接口函数
+- 接口合约内部不能定义状态变量
+- 继承接口必须实现内部的全部函数 
+- 接口合约内部不能包含构造函数 
+- 接口不能继承除接口外的其他合约 
+- 接口内部的函数必须使用external修饰
+- 接口函数不需要virtual修饰，因为继承接口需要实现接口内的全部函数
 ```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-interface IERC721  {
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+
+interface IERC721 {
     event Getbal(address indexed owner);
-    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
-    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
-    function balanceOf(address owner) external  returns (uint256 balance);
+
+    function balanceOf(address owner) external returns (uint256 balance);
 
     function ownerOf(uint256 tokenId) external view returns (address owner);
 }
 
-contract test is IERC721{
-    mapping(address=>uint256)balances;
-     function deposit() public payable {
-        balances[msg.sender] +=1000;
-    }
-    function balanceOf(address owner) external  returns (uint256){
-    emit Getbal(owner);
-    return  balances[owner];
+contract myToken is IERC721 {
+    mapping(address => uint256) balances;
+
+    function deposit() public payable {
+        balances[msg.sender] += 1000;
     }
 
-    function ownerOf(uint256 tokenId) external view returns (address owner){
+    function balanceOf(address owner) external returns (uint256) {
+        emit Getbal(owner);
+        return balances[owner];
     }
+
+    function ownerOf(uint256 tokenId) external view returns (address owner) {}
+
     function onERC721Received(
         address,
         address,
@@ -46,8 +49,9 @@ contract test is IERC721{
 contract interactBAYC {
     // 利用BAYC地址创建接口合约变量（ETH主网）
     IERC721 BAYC = IERC721(0xAc40c9C8dADE7B9CF37aEBb49Ab49485eBD3510d);
+
     // 通过接口调用BAYC的balanceOf()查询持仓量
-    function balanceOfBAYC(address owner) external  returns (uint256 balance){
+    function balanceOfBAYC(address owner) external returns (uint256 balance) {
         return BAYC.balanceOf(owner);
     }
 }
