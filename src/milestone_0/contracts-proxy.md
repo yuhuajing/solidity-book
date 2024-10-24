@@ -336,7 +336,7 @@ contract Factory is Ownable {
     }
 }
 ```
-## beacon代理合约
+## [beacon](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/proxy/beacon/BeaconProxy.sol)代理合约
 1. 多个 proxy(data) 合约使用同一个 逻辑合约,并且通过单笔交易可以升级多个proxy合约的逻辑合约地址
 2. 适用于一个逻辑产生多个衍生合约的场景（班级学生采用同一个逻辑管理，到那时每个人拥有各自的状态）
 3. 逻辑合约可以更新，该模式应该支持在单笔交易中更新全部代理合约的implementation地址
@@ -405,11 +405,11 @@ contract LogisNFT is Ownable, ERC721ABurnable {
      * @dev Returns the token collection name.
      */
     function name()
-        public
-        view
-        virtual
-        override(ERC721A, IERC721A)
-        returns (string memory)
+    public
+    view
+    virtual
+    override(ERC721A, IERC721A)
+    returns (string memory)
     {
         return nftname;
     }
@@ -418,11 +418,11 @@ contract LogisNFT is Ownable, ERC721ABurnable {
      * @dev Returns the token collection symbol.
      */
     function symbol()
-        public
-        view
-        virtual
-        override(ERC721A, IERC721A)
-        returns (string memory)
+    public
+    view
+    virtual
+    override(ERC721A, IERC721A)
+    returns (string memory)
     {
         return nftsymbol;
     }
@@ -442,37 +442,38 @@ contract LogisNFT is Ownable, ERC721ABurnable {
     }
 }
 
+// 管理Implementation
 contract Beacon is UpgradeableBeacon {
-    constructor(address implementation_, address initialOwner)
-        UpgradeableBeacon(implementation_, initialOwner)
+    constructor(address implementation_)
+    UpgradeableBeacon(implementation_, _msgSender())
     {}
 }
 
-// contract ProxyBase is BeaconProxy, Ownable {
-//     constructor(
-//         address beacon,
-//         bytes memory data,
-//         address _owner
-//     ) BeaconProxy(beacon, data) Ownable(_owner) {}
+// 管理beacon,用户直接交互的合约
+// address private immutable _beacon;
+// beacon地址不允许更新，值直接写到合约codes,读取的一直是合约codes中初始化的那个值
+// Factory产生的子合约
+contract ProxyBase is BeaconProxy, Ownable {
+    constructor(
+        address beacon,
+        bytes memory data, // delegateCall implementation()'s address
+        address _owner
+    ) BeaconProxy(beacon, data) Ownable(_owner) {}
 
-//     function implement() external view returns (address) {
-//         return _implementation();
-//     }
+    function implement() external view returns (address) {
+        return _implementation();
+    }
 
-//     function upgradeImpl(address beacon, bytes memory _data)
-//         public
-//         virtual
-//         onlyOwner
-//     {
-//         ERC1967Utils.upgradeBeaconToAndCall(beacon, _data);
-//     }
+    function renounceOwnership() public view override onlyOwner {
+        revert("CLOSED_INTERFACE");
+    }
 
-//     function renounceOwnership() public view override onlyOwner {
-//         revert("CLOSED_INTERFACE");
-//     }
+    function getBeacon() external view returns (address) {
+        return _getBeacon();
+    }
 
-//     receive() external payable {}
-// }
+    receive() external payable {}
+}
 
 contract Factory is Ownable {
     address[] public proxys;
@@ -508,5 +509,4 @@ contract Factory is Ownable {
         revert("CLOSED_INTERFACE");
     }
 }
-
 ```

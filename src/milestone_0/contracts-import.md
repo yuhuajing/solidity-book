@@ -1,5 +1,7 @@
 # import
-import 导包在声明版本号后，在合约代码前 `import {contractName} from '...'`
+- `import` 导包在声明版本号后，在合约代码前 `import {contractName} from '...'`
+- 导入合约后，相当于引入了完整的合约文件
+- 导入库函数后，合约内部不能定义重复的库函数
 ## import 导包
 1. 导入本地文件
 >import {Address} from './Address.sol';
@@ -8,9 +10,7 @@ import 导包在声明版本号后，在合约代码前 `import {contractName} f
 3. 通过npm 本地包导入
 > import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 ## 包内函数
-- 导入合约后，相当于引入了完整的合约文件
-- 导入库函数后，合约内部不能定义重复的库函数
-- 直接使用：通过合约名直接使用引入的合约函数
+- 直接使用：通过合约名直接调用引入的合约函数
 - 继承使用：除library外的合约，继承后可以直接使用包内的函数、状态变量
 ```solidity
 // SPDX-License-Identifier: MIT
