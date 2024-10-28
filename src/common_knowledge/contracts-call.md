@@ -1,28 +1,98 @@
 # [合约调用](https://www.rareskills.io/post/delegatecall)
-- 外部函数可以定义接口调用，<kbd>_Name(_Address).func()</kbd>
-- 外部函数支持通过合约函数选择器传参调用， `abi.encodeWithSignature | encodeWithSelector | encodePacked`
-  - 调用函数选择的方式：<kbd>Call,delegateCall,staticCall</kbd>
-- `public|external` 修饰的函数允许外部调用 以及 继承的合约使用
-- `internal|private` 修饰的函数不支持外部调用
-  - `internal` 修饰的函数允许继承使用
-  - `private` 修饰的函数不允许继承使用
-## 外部调用Error：
-- 执行中遇到 `REVERT` 关键字
-- `out-of-gas`
-- 异常(`/0，out-of-bound`)
 ## Call
 ![](./images/call-pic.png)
 - `Call` 的调用在底层新启一个 `EVM` 作为外部 `call` 交易的执行环境
 - 在新启的外部合约的 `EVM` 执行环境中，执行被调用合约的逻辑，更新被调用合约的状态变量
 - 对于被调用的合约来讲，外部 `call` 的交易处在新的 `EVM` 执行环境，交易的发起方就是发起调用的合约地址
-### 返回状态
-- `call` 返回 `(bool success, bytes memory data)`
+## High-level
+### contract interface
+- 外部函数可以定义接口调用，<kbd>_Name(_Address).func()</kbd>
+- 通过函数接口调用外部合约函数
+- 外部调用返回 `(bool success, bytes memory data)`
+  - 通过函数直接调用的话，`Solidity` 在语言层面直接判断返回值
+  - 返回值如果为 `false` ,抛出 `revert()` 异常
+    - 通过 [try/catch](./errors-check.md)捕获异常
+## Low-level
+### function selector
+- 外部函数支持通过合约函数选择器传参调用， `abi.encodeWithSignature | encodeWithSelector | encodePacked`
+  - `public|external` 修饰的函数允许外部调用 以及 继承的合约使用
+  - `internal|private` 修饰的函数不支持外部调用
+    - `internal` 修饰的函数允许继承使用
+    - `private` 修饰的函数不允许继承使用
+- 外部调用返回 `(bool success, bytes memory data)`
   - `boolean` 表明当前调用是否成功
   - `data` 是执行函数返回的数据
   - `call` 执行失败的话，不会 `revert` 回滚交易，因此需要执行异常判断
 - `call` 外部合约不存在的函数
   - 外部合约存在缺省 `fallback()` ，就执行 `fallback()` 逻辑
   - 不存在缺省函数的话，直接返回 `false`
+
+![](./images/call-high-lower-level.png)
+Solidity Examples
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+contract Caller {
+  // first call to ops()
+  // just return false, but not revert
+  function callByCall(address _address) public returns (bool) {
+    (bool success, bytes memory returndata) = _address.call(
+      abi.encodeWithSignature("ops()")
+    );
+    if (!success) _revert(returndata, "Call_Faliure");
+    return success;
+  }
+
+  // second call to ops()
+  // it will revert()
+  function callByInterface(address _address) public {
+    Called called = Called(_address);
+    called.ops();
+  }
+
+  function _revert(bytes memory returndata, string memory errorMessage)
+  private
+  pure
+  {
+    // Look for revert reason and bubble it up if present
+    if (returndata.length > 0) {
+      // The easiest way to bubble the revert reason is using memory via assembly
+      /// @solidity memory-safe-assembly
+      assembly {
+        let returndata_size := mload(returndata)
+        revert(add(32, returndata), returndata_size)
+      }
+    } else {
+      revert(errorMessage);
+    }
+  }
+}
+
+contract Called {
+  // ops() always reverts
+  function ops() public {
+    revert();
+  }
+}
+```
+## Calling address(0)
+### High-level
+- [high-level](https://www.rareskills.io/post/low-level-call-solidity) 在 `solidity` 层面直接发起外部合约调用
+  - 在发起对地址的调用前先校验 `caller` 是否合法
+  - 只能对合约代码不为空的地址发起外部调用
+### Lower-level
+- `lower-level` 在 `EVM` 层面直接发起外部合约调用
+  - 直接发起对地址的调用，就算地址 不合法或地址不是合约地址
+  - 不会在语言层面校验 `caller` [是否合法](./contracts-getcodes.md)
+  
+![](./images/call-before-check.png)
+
+## 外部调用 Error：
+- 执行中遇到 `REVERT` 关键字
+- `out-of-gas`
+- 异常(`/0，out-of-bound`)
+
 ## Solidity Contracts
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -134,6 +204,3 @@ contract payer {
   }
 }
 ```
-## [staticCall](https://www.rareskills.io/post/solidity-staticcall)
-1. 和Call一样，但是只能用于读取数据，无法更新slot数值
-2. 天然适用于使用 [预编译合约](./contracts-precompile.md)

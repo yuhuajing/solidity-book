@@ -73,4 +73,3 @@ contract userDefinedValue {
     }
 }
 ```
-
