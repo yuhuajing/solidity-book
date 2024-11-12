@@ -1,4 +1,4 @@
-# [预编译合约](https://www.rareskills.io/post/solidity-precompiles)（0x01 to 0x09）
+# [预编译合约](https://www.evm.codes/precompiled?fork=grayGlacier)（0x01 to 0x09）
 1. Elliptic curve digital signature recovery
 - [0x01: ecRecover](https://github.com/yuhuajing/solidityLearn/blob/main/smartContract/ECDSA/ECDSA.sol)
   - 签名验证失败会返回 `address(0)` ,不会 `revert` 整笔交易

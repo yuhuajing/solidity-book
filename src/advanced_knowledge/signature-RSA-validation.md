@@ -1,4 +1,23 @@
-# 通过合约校验签名：
+# 校验签名：
+## RSA
+rsa非对称密钥体系 基于初等数论中的欧拉定理 并且建立在大整数因子分解的困难性问题上
+![](./images/rsa-ola.png)
+![](./images/rsa-generate-key.png)
+
+加密/解密数据
+![](./images/rsa-generate-sign.png)
+
+examples
+![](./images/rsa-generate-examples.png)
+
+签名/解签
+- 签名数据 m
+- 签名数据 s = m^d % n
+- 验证签名： s^e % n = m %n
+  - s^e = m^(ed) = m^(k) $\Phi$
+## 合约验证签名
+
+
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
@@ -127,7 +146,7 @@ contract VerifySignature {
     }
 }
 ```
-Golang签名数据：
+## Golang签名数据：
 ```go
 package sig
 
@@ -213,7 +232,7 @@ func recPrizeSig(types, chainId, timestamp, uuid, signId uint64, ids, values []*
 	return hexutil.Encode(signatureBytes)
 }
 ```
-Js生成签名
+## Js生成签名
 ```javascript
 // https://docs.ethers.org/v6/cookbook/signing/
 import {ethers} from"ethers";
@@ -234,4 +253,45 @@ const main = async () => {
     // console.log(rawSig);
 }
 main()
+```
+## golang校验钱包签名
+```go
+package sig
+
+import (
+	"crypto/ecdsa"
+	"fmt"
+	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
+	"main/config"
+	"unsafe"
+)
+
+func ExampleRequest() {
+	str := "ae696770-09ac-4526-8b3d-c859c003d173"
+	prikey := config.Env("PRIVATE_KEY", "")
+	PrivateKey, _ := crypto.HexToECDSA(prikey)
+
+	publicKey := PrivateKey.Public()
+	publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
+	pubByte := crypto.FromECDSAPub(publicKeyECDSA)
+	hashbyte, sigbyte, packedstr := exampleSig(str, PrivateKey)
+	fmt.Println(VerifySignature(pubByte, hashbyte, sigbyte[:len(sigbyte)-1]))
+	fmt.Println(hexutil.Encode(hashbyte))
+	fmt.Printf("metadataSig: %s\n", packedstr)
+}
+func UnsafeBytes(s string) []byte {
+	return unsafe.Slice(unsafe.StringData(s), len(s))
+}
+func exampleSig(message string, privateKey *ecdsa.PrivateKey) ([]byte, []byte, string) {
+	hash := accounts.TextHash(UnsafeBytes(message))
+
+	signatureBytes, err := crypto.Sign(hash, privateKey)
+	if err != nil {
+		return nil, nil, ""
+	}
+	signatureBytes[64] += 27
+	return hash, signatureBytes, hexutil.Encode(signatureBytes)
+}
 ```
