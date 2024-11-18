@@ -3,8 +3,6 @@ ECDSA(Elliptic Curve Digital Signature Algorithm) 用来对特定的数据进行
 - 签名树被篡改的话，公钥无法解封出正确的数据
 - 签名公钥和私钥不配对的话，数据无法解封
 
-
-
 /* Signature Verification
 How to Sign and Verify
 ## Signing
