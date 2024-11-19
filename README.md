@@ -1,102 +1,61 @@
-# Uniswap V3 Development Book
+#  Solidity Development Book
+Welcome to the world of decentralized blockchain: The document begins with an introduction to blockchain technology and Ethereum, providing essential context for understanding smart contracts. It then delves into the syntax and features of Solidity, covering key concepts such as data types, functions, modifiers, and inheritance. Practical examples are included to illustrate how to write and deploy smart contracts, along with best practices for security and optimization. Additionally, the document addresses common pitfalls and debugging strategies to help learners navigate challenges they may encounter. Finally, the document provides resources for further learning, including links to online courses, documentation, and community forums. This structured approach aims to equip readers with the knowledge and skills needed to confidently create and manage their own smart contracts in Solidity
 
-<p align="center">
-<img src="/src/images/cover.png" alt="Uniswap V3 Development Book cover" width="360"/>
-</p>
+This book will guide you through the development of a decentralized application, including:
+- smart-contract development (in [Solidity](https://docs.soliditylang.org/en/latest/index.html));
 
+**This book is not for complete beginners.**
 
-<p align="center">
-👉&nbsp;<a href="https://uniswapv3book.com/">READ ONLINE</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="https://uniswapv3book.com/print.html">PRINT OR SAVE AS PDF</a>&nbsp;👈
-</p>
+I expect you to be an experienced developer, who has ever programmed in any programming language. It'll also be helpful if you know [the syntax of Solidity](https://docs.soliditylang.org/en/v0.8.17/introduction-to-smart-contracts.html), the main programming language of this book. If not, it's not a big problem: we'll learn a lot about Solidity and Ethereum Virtual Machine during our journey.
 
-This book will teach how to develop an advanced decentralized application! Specifically, we'll be building a clone of
-[Uniswap V3](https://uniswap.org/), which is a decentralized exchange.
+**However, this book is for blockchain beginners.**
 
-## Why Uniswap?
-- It implements a very simple mathematical concept, `x * y = k`, which still makes it very powerful.
-- It's an advanced application that has a thick layer of engineering on top of the simple formula.
-- It's permissionless and battle-tested. Learning from an application that's been running in production for
-several years and handling billions of dollars will make you a better developer.
+If you only heard about blockchains and were interested but haven't had a chance to dive deeper, this book is for you!  Yes, for you! You'll learn how to develop for blockchains (specifically, Ethereum), how blockchains work, how to program and deploy smart contracts, and how to run and test them on your computer.
 
-## What we'll build
+Alright, let's get started!
 
-![Front-end application screenshot](/screenshot.png)
-
-We'll build a full clone of Uniswap V3. It **won't be an exact copy** and it **won't be production-ready** because we'll
-do something in our own way and we'll **definitely** introduce multiple bugs. So, don't deploy this to the mainnet!
-
-While our focus will primarily be on smart contracts, we'll also build a front-end application as a side hustle. 🙂
-I'm not a front-end developer and I cannot make a front-end application better than you, but I can show you how a
-decentralized exchange can be integrated into a front-end application.
-
-The full code of what we'll build is stored in a separate repository:
-
-https://github.com/Jeiwan/uniswapv3-code
-
-You can read this book at:
-
-https://uniswapv3book.com/
-
-### Questions?
-
-Each milestone has its own section in [the GitHub Discussions](https://github.com/Jeiwan/uniswapv3-book/discussions).
-Don't hesitate to ask questions about anything that's not clear in the book!
+## Useful Links
+1. This book is hosted on GitHub: <https://github.com/yuhuajing/solidity-book>
 
 ## Table of Contents
-
-- Milestone 0. Introduction
-  1. Introduction to markets
-  1. Constant Function Market Makers
-  1. Uniswap V3
-  1. Development Environment
-  1. What We'll Build
-- Milestone 1. First Swap
-  1. Introduction
-  1. Calculating Liquidity
-  1. Providing Liquidity
-  1. First Swap
-  1. Manager Contract
-  1. Deployment
-  1. User Interface
-- Milestone 2. Second Swap
-  1. Introduction
-  1. Output Amount Calculation
-  1. Math in Solidity
-  1. Tick Bitmap Index
-  1. Generalize Minting
-  1. Generalize Swapping
-  1. Quoter Contract
-  1. User Interface
-- Milestone 3. Cross-tick Swaps
-  1. Introduction
-  1. Different Price Ranges
-  1. Cross-Tick Swaps
-  1. Slippage Protection
-  1. Liquidity Calculation
-  1. A Little Bit More on Fixed-point Numbers
-  1. Flash Loans
-  1. User Interface
-
-- Milestone 4. Multi-pool Swaps
-  1. Introduction
-  1. Factory Contract
-  1. Swap Path
-  1. Multi-pool Swaps
-  1. User Interface
-  1. Tick Rounding
-- Milestone 5. Fees and Price Oracle
-  1. Introduction
-  1. Swap Fees
-  1. Flash Loan Fees
-  1. Protocol Fees
-  1. Price Oracle
-  1. User Interface
-- Milestone 6: NFT positions
-  1. Introduction
-  1. ERC721 Overview
-  1. NFT Manager
-  1. NFT Renderer
-
+- Milestone 0. Solidity Data
+  1. data-bytes
+  2. data-enum
+  3. data-foreach
+  4. data-mapping
+  5. data-variables
+  6. data-encode
+- Milestone 1. Solidity functions
+  1. variables-slot-storage
+  2. variables-unicode
+  3. variables-user-defined-type
+- Milestone 2. Solidity variables
+  1. Functions
+  2. Functions modifier
+  3. Functions selector
+  4. Functions sendValue
+  5. errors check
+- Milestone 3. Sollidity contracts create
+  1. contracts-import
+  2. contracts-create
+  3. contracts-creationcodes
+  4. contracts-destroy
+  5. contracts-event
+  6. contracts-getcodes
+- Milestone 4: Sollidity contracts type
+  1. contracts-interface
+  2. contracts-library
+  3. contracts-abstract
+  4. contracts-inherite
+  5. contracts-proxy
+- Milestone 5. Sollidity contracts call
+  1. contracts-call
+  2. contracts-delegatecall
+  3. contrats-staticcall
+  4. contracts-precompile
+- Milestone 6. Sollidity advanced
+  1. merkle tree
+  2. ecdsa signature
 ## Running locally
 
 To run the book locally:
@@ -108,8 +67,8 @@ To run the book locally:
     ```
 1. Clone the repo:
     ```shell
-    $ git clone https://github.com/Jeiwan/uniswapv3-book
-    $ cd uniswapv3-book
+    $ git clone https://github.com/yuhuajing/solidity-book.git
+    $ cd solidity-book
     ```
 1. Run:
     ```shell
