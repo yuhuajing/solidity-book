@@ -46,3 +46,4 @@
 # Milestone 6. Sollidity advanced
 - [merkle tree](./milestone_6/merkle-proof-validation.md)
 - [ecdsa signature](./milestone_6/signature-ECDSA-validation.md)
+- [common-mistake](./milestone_6/common-mistakes.md)
