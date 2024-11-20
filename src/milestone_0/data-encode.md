@@ -154,8 +154,8 @@ Examples-嵌套数组的编码，传参编码的规则：
 - 在数据顺序上进行最低空间编码，省略编码中的填充0
 - 动态类型数据只保留数据，不填充长度字段
   - `keccak256(abi.encodePacked(“a”, “b”, “c”)) == keccak256(abi.encodePacked(“a”, “bc”)) == keccak256(abi.encodePacked(“ab”, “c”))`
-- 数组参数依次存储在不同的slot
 - 当数据不需要和合约交互，只是用来查看数据的情况下就可以使用 `encodepacked` 节省数据空间
+- `encodePacked` 不能编码 `struct`、`nextedArray`(`以及包含多维数组的map`)
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
@@ -164,29 +164,49 @@ contract Pair {
     uint40 x;
     address addr;
     string name;
-    uint128[2] array;
+    uint8[2] array;
+    Tree tree;
+    uint8[][]loc;
+    mapping(uint256=>uint8[][])nextArrayMap;
+
+    struct Tree {
+        uint256 leaves;
+        uint256 age;
+    }
 
     constructor() payable {
         x = 10;
         addr = 0x7A58c0Be72BE218B41C608b7Fe7C5bB630736C71;
         name = "0xAA";
         array = [5, 6];
+        tree = Tree({leaves: 100, age: 1000});
+        loc[0].push(6);
+        loc[0].push(7);
+        nextArrayMap[0]= loc;
     }
 
-    function abiCode() public view returns (bytes memory data) {
-        data = abi.encodePacked(x, addr, name, array);
+    function abiEncodePacked()
+    public
+    view
+    returns (bytes memory encodeData, bytes memory encodePackedData)
+    {
+        encodeData = abi.encode(x, addr, name, array);
+        encodePackedData = abi.encodePacked(x, addr, name, array,nextArrayMap,tree,loc);
     }
 }
 ```
->0x000000000a
+
+>0x000000000a //uint40 40bit
 > 
 > 7a58c0be72be218b41c608b7fe7c5bb630736c71
 > 
->30784141
+> 30784141
 > 
 > 0000000000000000000000000000000000000000000000000000000000000005
 > 
 > 0000000000000000000000000000000000000000000000000000000000000006
+
+![](./images/encode-encodepacked.png)
 
 ### abi.decode
 解码 `encode` 的合约参数，将编码数据解码回原本数据，解码函数中需要提供待解析的编码和解析后的参数类型

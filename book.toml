@@ -1,17 +1,17 @@
 [book]
-authors = ["Jeiwan"]
+authors = ["HuajingYu"]
 language = "en"
 multilingual = false
 src = "src"
-title = "Uniswap V3 Development Book"
-description = "A book that teaches how to build a clone of Uniswap V3 in Solidity from scratch."
+title = "Solidity Development Book"
+description = "A book that teaches how to learn Solidity smart contracts."
 
 [output.html]
 curly-quotes = true
-git-repository-url = "https://github.com/Jeiwan/uniswapv3-book"
+git-repository-url = "https://github.com/yuhuajing/solidity-book"
 git-repository-icon = "fa-github"
-edit-url-template = "https://github.com/Jeiwan/uniswapv3-book/edit/main/{path}"
-cname = "uniswapv3book.com"
+edit-url-template = "https://github.com/yuhuajing/solidity-book/edit/main/{path}"
+cname = "solidity-book.com"
 
 [preprocessor.katex]
 after = ["links"]

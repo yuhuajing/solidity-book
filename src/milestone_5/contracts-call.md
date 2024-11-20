@@ -1,17 +1,17 @@
 # [合约调用](https://www.rareskills.io/post/delegatecall)
 ## Call
-![](../common_knowledge/images/call-pic.png)
-- `Call` 的调用在底层新启一个 `EVM` 作为外部 `call` 交易的执行环境
-- 在新启的外部合约的 `EVM` 执行环境中，执行被调用合约的逻辑，更新被调用合约的状态变量
-- 对于被调用的合约来讲，外部 `call` 的交易处在新的 `EVM` 执行环境，交易的发起方就是发起调用的合约地址
+![](./images/call-pic.png)
+- `call` 的外部调用在 `low-level` 层面新启一个 `EVM` 作为外部合约被 `call` 后的交易的执行环境
+- 在新启的 `EVM` 执行环境中，整体复制外部合约的代码
+  - 按照外部合约的逻辑执行当前交易，更新外部合约的状态变量
+- 对于外部合约来讲，当前被 `call` 的交易处在新的 `EVM` 执行环境，交易的发起方就是发起调用的合约地址
 ## High-level
 ### contract interface
-- 外部函数可以定义接口调用，<kbd>_Name(_Address).func()</kbd>
-- 通过函数接口调用外部合约函数
-- 外部调用返回 `(bool success, bytes memory data)`
+- 通过函数接口调用外部合约函数，<kbd>_Name(_Address).func()</kbd>
+- `call` 返回 `(bool success, bytes memory data)`
   - 通过函数直接调用的话，`Solidity` 在语言层面直接判断返回值
   - 返回值如果为 `false` ,抛出 `revert()` 异常
-    - 通过 [try/catch](../Milestone2/errors-check.mdors-check.md)捕获异常
+    - 通过 [try/catch](../milestone_2/errors-check.md)捕获异常
 ## Low-level
 ### function selector
 - 外部函数支持通过合约函数选择器传参调用， `abi.encodeWithSignature | encodeWithSelector | encodePacked`
@@ -27,7 +27,13 @@
   - 外部合约存在缺省 `fallback()` ，就执行 `fallback()` 逻辑
   - 不存在缺省函数的话，直接返回 `false`
 
-![](../common_knowledge/images/call-high-lower-level.png)
+![](./images/call-high-lower-level.png)
+
+### Call types validation
+- `call`
+  - 交易执行在新的 `EVM` 执行环境
+  - `address(this)` = 被调用的外部合约的地址
+  
 Solidity Examples
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -80,13 +86,12 @@ contract Called {
 ### High-level
 - [high-level](https://www.rareskills.io/post/low-level-call-solidity) 在 `solidity` 层面直接发起外部合约调用
   - 在发起对地址的调用前先校验 `caller` 是否合法
-  - 只能对合约代码不为空的地址发起外部调用
+    - 只能对合约代码不为空的地址发起外部调用
 ### Lower-level
 - `lower-level` 在 `EVM` 层面直接发起外部合约调用
-  - 直接发起对地址的调用，就算地址 不合法或地址不是合约地址
-  - 不会在语言层面校验 `caller` [是否合法](../common_knowledge/contracts-getcodes.md)
+  - 直接发起对地址的调用，不会在语言层面校验 `caller` 是否合法
   
-![](../common_knowledge/images/call-before-check.png)
+![](./images/call-before-check.png)
 
 ## 外部调用 Error：
 - 执行中遇到 `REVERT` 关键字

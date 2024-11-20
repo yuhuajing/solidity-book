@@ -1,6 +1,6 @@
-# [预编译合约](https://www.evm.codes/precompiled?fork=grayGlacier)（0x01 to 0x09）
+# 预编译合约（0x01 to 0x09）
 1. Elliptic curve digital signature recovery
-- [0x01: ecRecover](https://github.com/yuhuajing/solidityLearn/blob/main/smartContract/ECDSA/ECDSA.sol)
+- 0x01: ecRecover
   - 签名验证失败会返回 `address(0)` ,不会 `revert` 整笔交易
   - 需要进行签名地址校验
 [ECDSA校验签名](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/ECDSA.sol)
@@ -185,10 +185,11 @@ library ECDSA {
     }
 }
 ```
+
 2. Hash methods to interact with bitcoin and zcash
 - 0x02 and 0x03: SHA-256 and RIPEMD-160
-- `Ethereum` 使用 `keccak256` 作为地址的哈希算法
-- `Bitcoin` 使用 `SHA-256 and RIPEMD-160` 作为基础的哈希计算
+  - `Ethereum` 使用 `keccak256` 作为地址的哈希算法
+  - `Bitcoin` 使用 `SHA-256 and RIPEMD-160` 作为基础的哈希计算
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
@@ -225,6 +226,7 @@ contract Called {
   }
 }
 ```
+Goland Sha256：
 ```golang
 	s := hexutil.EncodeBig(big.NewInt(12)) 
 	prefix := ""
@@ -277,3 +279,6 @@ contract MoxExp {
 ```
 - Address 0x06 and 0x07 and 0x08: ecAdd, ecMul, and ecPairing (EIP-196 and EIP-197)
   - ECC 运算用于[零知识证明](https://www.rareskills.io/zk-book)和 [TornadoCash](../milestone_1/tornado-cash.md)
+
+## Preference
+https://www.evm.codes/precompiled?fork=grayGlacier

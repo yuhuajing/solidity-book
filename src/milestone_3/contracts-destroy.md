@@ -1,11 +1,11 @@
 # selfdestruct
 - [selfdestruct](https://rya-sge.github.io/access-denied/2024/03/13/EIP-6780-selfdestruct/) 关键字强制将当前合约余额转给传参地址
-- 自毁关键字下的转账行为是不可控，任何合约内部执行<kbd>selfdestruct</kbd>后都会把余额转给传参地址
+- 自毁关键字下的转账行为是不可控，任何合约内部执行 <kbd>selfdestruct</kbd> 后都会把余额强制转给传参地址
 ## Dencun upgrade
-- `selfdestruct` 交易仅仅将合约余额发送到传参地址
-- 不会清除合约状态和代码
+`Dencun` 升级后针对 `selfdestruct` 的问题进行了修正升级：
+- `selfdestruct` 交易仅仅将合约余额发送到传参地址, 并且不会清除合约状态和代码
 - 销毁后，不用再次通过 [CREATE2](./contracts-create.md) 部署相同地址合约，因为原地址的状态和代码还保留在链上
-- 销毁后，任何的外部调用 [call|delegateCall](../Milestone3/contracts-call.md) 也不会失败
+- 销毁后，任何的外部调用 [call|delegateCall](../milestone_5/contracts-call.md) 也不会失败
 - 也不会存在代币锁仓的隐患，因为之前合约的逻辑和状态并未清空
 ## Solidity Examples
 ```solidity

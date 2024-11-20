@@ -1,15 +1,15 @@
-# [staticCall](https://www.rareskills.io/post/solidity-staticcall)
+# staticCall
 1. `staticcall{gas: gasAmount}(abiEncodedArguments);`
-2. 底层 `call` 外部合约函数读取数据
+2. `staticcall` 外部合约函数只读数据
    1. 函数必须被 `view|pure` 修饰，表明只读
-3. 天然适用于 [预编译合约](contracts-precompile.md)
+3. 天然适用于 [预编译合约](./contracts-precompile.md)
 4. `staticcall` 无法更新状态变量:
    1. 更新合约内部的状态变量
-   2. emit event 触发链上事件
+   2. `emit event` 触发链上事件
    3. 创建其他合约
-   4. self destruct 销毁合约（将code数据从状态树中移除）
+   4. `self destruct` 销毁合约（合约余额强制转移到传参地址）
    5. 转账，更新账户余额
-   6. 调用其他未标记 pure/view的函数
+   6. 调用其他未标记 `pure/view` 的函数
    7. 使用内联编码更改状态数据库
 ## Solidity Examples
 ```solidity
@@ -59,6 +59,9 @@ contract ERC20User {
 ```
 ## Security Issues
 ### Denial of Service
-`staticCall` 支持指定gas[63/64](https://www.rareskills.io/post/eip-150-and-the-63-64-rule-for-gas)执行只读的调用，但是对方函数逻辑不明，存在恶意消耗`gas`的安全隐患
+`staticCall` 支持指定 `gas` [63/64](https://www.rareskills.io/post/eip-150-and-the-63-64-rule-for-gas) 执行只读的调用，但是对方函数逻辑不明，存在恶意消耗 `gas` 的安全隐患
 ### Read only Re-entrancy
 只读函数会受到其他函数的[影响](https://yuhuajing.github.io/ethernaut-book/21-Shop/Shop.html)
+
+## Preference
+https://www.rareskills.io/post/solidity-staticcall

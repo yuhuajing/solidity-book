@@ -1,7 +1,7 @@
 # [合约调用](https://www.rareskills.io/post/delegatecall)
 ## delegateCall
-![](../common_knowledge/images/delegatecall-pic.png)
-- `delegateCall` 在底层将外部合约的代码整个复制到当前EVM环境，与 `origin` 交易复用同一个 `EVM` 执行环境
+![](./images/delegatecall-pic.png)
+- `delegateCall` 在 `low-level` 层将外部合约的代码整个复制到当前 `EVM` 环境，与 `origin` 交易复用同一个 `EVM` 执行环境
   - `delegateCall` 执行在本合约的 `EVM` 环境 
   - `delegateCall` 拥有完整的外部调用合约的合约代码
   - `delegateCall` 按照外部合约代码去更新/读取 `EVM` 环境中的 `slot` 的状态变量
@@ -16,7 +16,7 @@
 ### Solidity Examples
 - `delegateCall` 按照外部合约代码去更新/读取 `EVM` 环境中的 `slot` 的状态变量
 - 示例合约在 `EVM` 中的逻辑为： `slot1 += slot0`
-- 本合约按照上述逻辑更新自己合约内部的 `slot` 参数
+  - 本合约按照上述逻辑更新自己合约内部的 `slot` 参数
 ```solidity
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.7.0 <0.9.0;
@@ -26,14 +26,14 @@ contract Called {
   uint256 public number; //slot 1
 
   function increment() public returns (uint256) {
-    number += base; // slot0's value
+    number += base; // slot1  += slot0
     return number;
   }
 }
 
 contract Caller {
-  uint256 base = 99; // 按照业务逻辑会读取slot0数据，参与计算。每次调用：slot1 += slot0(myNumber+=99)
-  uint256 public myNumber;
+  uint256 base = 99; // 按照业务逻辑会读取slot0数据，参与计算
+  uint256 public myNumber; // 每次调用：slot1 += slot0(myNumber+=99)
   // there is a new storage variable here
   address public calledAddress = 0xd9145CCE52D386f254917e481eB44e9943F39138;
 
@@ -81,8 +81,8 @@ contract Caller {
 ```
 ## Immutable|Constant in delegateCall
 - `delegateCall` 是将外部合约的代码整个拷贝到当前 `EVM` 执行
-- `immutable|constant` 是编码到合约代码存储，并不占据`slot` 存储
-- 也就是 `immutable|constant` 类型的数据，是从外部合约代码读取
+- `immutable|constant` 是编码到合约代码存储，并不占据 `slot` 存储
+- 也就是 `immutable|constant` 类型的数据，是从外部合约代码直接读取
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;

@@ -1,6 +1,6 @@
 # 异常捕获
 `Solidity` 将异常情况分为三类：前置（`require`）、后置（`assert`）、抛出异常（`revert`）:
-三种异常通过[try-catch](https://www.rareskills.io/post/try-catch-solidity)捕获处理
+三种异常通过 `try-catch` 捕获处理
 ## require 前置判断
 - `require(condition,"ErrorMsg“)`, which throws if the condition is false
   - 条件不满足时就会抛出异常，输出异常字符串(`ErrorMsg`)
@@ -44,7 +44,7 @@ lower-level的调用在EVM层面，直接返回 `boolean,bytes`,让用户自行�
 - `catch` 匹配异常
   - Panic(errorCode) via assert
     - 0x00,编译器错误
-    - 0x01,assert报错
+    - 0x01,assert 报错
     - 0x11,数字越界错误
     - 0x12,/0
     - 0x21,转化枚举类型时：传参负数或越界
@@ -53,7 +53,7 @@ lower-level的调用在EVM层面，直接返回 `boolean,bytes`,让用户自行�
     - 0x32,数组越界
     - 0x41,申请内存超额或数组太大
     - 0x51,访问局部变量
-    - 返回数据： bytes4(keccak256(”Panic(uint256)”))) + encode_Uint256
+    - 返回数据： `bytes4(keccak256(”Panic(uint256)”))) + encode_uint256`
   - Error via require|revert
     - `require(bool) =  if(bool){revert()}`，直接 revert(),返回数据为空
     - `require(bool, string) = if(bool){revert(string)}`，返回数据是 `Error(string)` 的编码
@@ -82,3 +82,5 @@ function callContractB() external view {
   }
 }
 ```
+## Preference
+https://www.rareskills.io/post/try-catch-solidity

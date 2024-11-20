@@ -2,10 +2,10 @@
 继承合约时，也需要初始化合约的构造函数
 ## 合约函数的继承
 - 按照继承顺序，继承父合约的全部状态变量
-  - immutable 变量需要在 构造函数中声明
-  - constant 变量直接继承使用
+  - `immutable` 变量需要在 构造函数中声明
+  - `constant` 变量直接继承使用
   - 按照继承顺序，继承父合约的全部修饰器
-![](../common_knowledge/images/slot-inherite.png)
+![](./images/slot-inherite.png)
 ```solidity
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.7.0 <0.9.0;

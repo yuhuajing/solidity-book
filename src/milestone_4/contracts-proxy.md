@@ -1,18 +1,20 @@
 # 代理合约
-- 代理合约底层采用 [delegateCall](./contracts-delegatecall.md),分离业务逻辑和数据存储。
-- 由于业务和数据分离，后续可以灵活替换逻辑业务
-- 代理合约按照业务合约代码去更新/读取 `EVM` 环境中的 `slot` 的状态变量
-    - 因此替换业务合约时，应该保持 `slot` 的状态变量的顺序
+- 代理合约底层采用 [delegateCall](./contracts-delegatecall.md),分离逻辑和数据。
+- 由于逻辑和数据分离，后续可以灵活替换逻辑业务
+- 代理合约按照逻辑合约代码去更新/读取 `EVM` 环境中的 `slot` 的状态变量
+    - 因此替换逻辑合约时，应该保持 `slot` 的状态变量的顺序
     - 新增参数只能在末端添加
-![](../common_knowledge/images/proxy.png)
-![](../common_knowledge/images/proxy-core.png)
+
+![](./images/proxy.png)
+![](./images/proxy-core.png)
 ## 代理合约逻辑
-- 用户直接对接代理合约，代理合约存储合约数据
-- 代理合约 `delegateCall` 调用逻辑合约，只能更改数据合约内部的状态变量
-- 逻辑合约的数据不受代理合约的影响
-- 逻辑合约控制整个代理合约数据处理的逻辑
-- 因此，代理合约和逻辑合约两部分合约内部参数的初始化，需要独立执行，各自数据并不互通
-![](../common_knowledge/images/proxy-init.png)
+- 用户直接对接代理合约，代理合约存储合约数据 
+  - 代理合约 `delegateCall` 调用逻辑合约，只能更改代理合约内部的状态变量
+- 逻辑合约仅仅负责代理合约数据处理的逻辑
+  - 逻辑合约的数据不受代理合约的影响
+- 因此，需要独立初始化代理合约和逻辑合约的内部参数
+
+![](./images/proxy-init.png)
 ## 代理合约[插槽](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/proxy/ERC1967/ERC1967Utils.sol#L21)存储
 >This is the keccak-256 hash of "eip1967.proxy.implementation" subtracted by 1.
 > 
@@ -21,13 +23,15 @@
 > This is the keccak-256 hash of "eip1967.proxy.admin" subtracted by 1.
 > 
 >bytes32 internal constant ADMIN_SLOT = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
-![](../common_knowledge/images/proxy-implementation-slot.png)
+
+![](./images/proxy-implementation-slot.png)
 ## 最简代理合约（不可升级clone）
 [最小代理](https://www.rareskills.io/post/eip-1167-minimal-proxy-standard-with-initialization-clone-pattern)基于[EIP1167](https://eips.ethereum.org/EIPS/eip-1167),由三部分组成:
 - `initcode`,拷贝 `calldata` 数据
 - 指定逻辑合约地址
 - 执行 `delegateCall`,返回执行结果或者失败 `revert`
-![](../common_knowledge/images/minimum-proxy-clone.png)
+
+![](./images/minimum-proxy-clone.png)
 ### examples
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -184,7 +188,7 @@ contract Factory {
 ### 逻辑合约地址
 - [eip1967](https://www.rareskills.io/post/erc1967) 允许函数更新 `IMPLEMENTATION_SLOT` 数据 (严格的权限控制),
 ### initialize 
-- 一般情况下，逻辑合约定义 `initialize()` 函数用于初始化代理合约
+- 一般情况下，逻辑合约定义 `initialize()` 函数，按照插槽顺序初始化代理合约数据
   - 但是需要注意： `initialize()` 应该只能调用一次,或者拥有严格的权限控制
   - 代理合约的初始化不会影响逻辑合约的状态变量
   - 逻辑合约必须单独执行数据的初始化，并确保逻辑合约中的初始化只能调用一次,或者拥有严格的权限控制
@@ -337,26 +341,30 @@ contract Factory is Ownable {
 }
 ```
 ### 合约升级
-![](../common_knowledge/images/proxy-upgradeImpl.png)
+![](./images/proxy-upgradeImpl.png)
+
 - 代理合约直接 `delegateCall` 逻辑合约
 - 按照逻辑合约的代码更新 代理合约 `EVM slot` 数据
-- 
+
 因此，合于升级后不能影响旧的状态变量相对顺序
 - 合约升级只能添加新的函数、事件、`error`、结构体、`immutable|constant` 变量
 - 合约升级允许更新函数逻辑
 - 合约升级可以在最后添加新的状态变量，确保旧状态变量的顺序
 - 合约升级不能更改状态变量顺序、不能继承新的合约（会改变状态变量顺序）
-![](../common_knowledge/images/proxy-upgrade-allow.png)
-![](../common_knowledge/images/proxy-upgrade-forbidden.png)
+
+![](./images/proxy-upgrade-allow.png)
+![](./images/proxy-upgrade-forbidden.png)
 ## [beacon](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/proxy/beacon/BeaconProxy.sol)代理合约
 1. 多个代理合约使用同一个逻辑合约,并且通过单笔交易可以升级多个代理合约的逻辑合约地址
-2. 适用于一个逻辑产生多个衍生合约的场景（班级学生采用同一个逻辑管理，到那时每个人拥有各自的状态）
+2. 适用于一个逻辑产生多个衍生合约的场景（班级学生采用同一个逻辑管理，但是每人拥有各自的状态）
 ### beacon合约
 - `beacon` 合约作为灯塔，提供当前 `implementation` 地址
 - 全部代理合约去 `beacon` 合约读取逻辑合约地址，发送 `delegateCall` 交易
-![](../common_knowledge/images/beacon-proxy-read-implementation.png)
+
+![](./images/beacon-proxy-read-implementation.png)
 - 更换新的逻辑合约后，只需要更新 `beacon` 合约的 `IMPLEMENTATION_SLOT` 数据，就可以实现 `all proxy` 的逻辑地址更新
-![](../common_knowledge/images/beacon-proxy-factory.png)
+
+![](./images/beacon-proxy-factory.png)
 ```solidity
 // SPDX-License-Identifier: MIT
 

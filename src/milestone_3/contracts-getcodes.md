@@ -4,10 +4,10 @@
 - `EXTCODESIZE` 读取 `code.length` 
 - `EXTCODEHASH` 读取 `code.hash`
 ## msg.sender==tx.origin
-- `tx.origin` 是链上全局变量，是当前交易的初始构建地址
-- `msg.sender` 是在 `EVM` 执行环境中的当前交易的发送地址
+- `tx.origin` 是当前交易的签名地址
+- `msg.sender` 是当前 `EVM` 执行环境中的交易发送地址
 - 对于 `EOA` 直接发起的的合约交易，合约内部：`msg.sender==tx.origin`
-- 合约之间重启 `EVM` 执行环境的外部调用：`msg.sender!=tx.origin`
+- 合约之间外部调用重启 `EVM` 执行环境的外部调用：`msg.sender!=tx.origin`
 ![](./images/tx-origin-sender.png)
 ## EXTCODESIZE
 - `codeSize = 0`, 不表示该地址一定是 `EOA` 地址

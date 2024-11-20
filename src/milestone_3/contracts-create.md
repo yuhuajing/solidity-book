@@ -1,15 +1,15 @@
 # 创建合约
-合约通过关键字 [CREATE](https://www.evm.codes/?fork=cancun#f0)，[CREATE2](https://www.evm.codes/?fork=cancun#f5),new 创建
+合约通过关键字 [CREATE](https://www.evm.codes/?fork=cancun#f0)，[CREATE2](https://www.evm.codes/?fork=cancun#f5),`new` 创建
 ## CREATE
 - 新合约地址 `address = keccak256(rlp([sender_address,sender_nonce]))[12:]`
-  - 同一条链上的账户地址nonce递增，因此账户在相同链上无法部署同样的合约账户 
-  - 同样地址在不同链上，能过够通过相同nonce值部署相同地址的合约
+  - 同一条链上的账户地址 `nonce` 递增，因此账户在相同链上无法部署同样的合约账户 
+  - 同样地址在不同链上，能过够通过相同 `nonce` 值部署相同地址的合约
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
 
 contract FindSC {
-  function addressFrom(address _origin, uint256 _nonce)
+  function contractAddressFrom(address _origin, uint256 _nonce)
   public
   pure
   returns (address)
@@ -66,12 +66,12 @@ contract FindSC {
 }
 ```
 ## CREATE2
-> `initialisation_code = memory[offset:offset+size]`
+> `creation_code = memory[offset:offset+size]`
 > 
-> `address = keccak256(0xff + sender_address + salt + keccak256(initialisation_code))[12:]`
+> `address = keccak256(0xff + sender_address + salt + keccak256(creation_code))[12:]`
 - 通过自定义的 `salt` 和 `合约代码` 替换递增的 `nonce` 值
-  - `合约代码` 一般选择合约的[creationCodes](./contracts-creationcodes.md)
-  - `creationCodes` 包含 `initCode`，在构造函数发生任何变化后也会造成合约地址的变化
+  - `合约代码` 一般选择合约的 [creationCode](./contracts-creationcodes.md)
+  - `creationCode` 包含完整的合约代码 `initCode + runtimeCode`，在构造函数发生任何变化后,也会造成合约地址的变化
 - 在相同链上通过相同的 `salt` 和 `合约代码`，就可以实现同地址合约的提前使用
 ## New
 - 新合约地址：`Contract x = new Contract{value: _value，salt: salt}(params)`
