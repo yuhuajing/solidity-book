@@ -16,6 +16,7 @@ Alright, let's get started!
 
 ## Useful Links
 1. This book is hosted on GitHub: <https://github.com/yuhuajing/solidity-book>
+2. Page in <https://yuhuajing.github.io/solidity-book/>
 
 ## Table of Contents
 - Milestone 0. Solidity Data
