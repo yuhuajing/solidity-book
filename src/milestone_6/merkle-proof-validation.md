@@ -49,5 +49,5 @@ return root == h(g)
 
 [openzeppelin-merkle-proof-golang](https://github.com/FantasyJony/openzeppelin-merkle-tree-go)
 
-[contracts](../ContractsHub/merkle_tree_prove)
+[contracts](../ContractsHub/merkle_tree_prove/verify.sol)
 
