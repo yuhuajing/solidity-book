@@ -184,10 +184,10 @@ library GetCode {
 }
 ```
 假设：
-- _addr 地址的代码大小是 size = 45 字节
-- 当前空闲内存指针 mload(0x40) = 0x80
+- `_addr` 地址的代码大小是 size = 45 字节
+- 当前空闲内存指针 `mload(0x40) = 0x80`
 
-1. 获取合约code的size
+1. 获取合约代码 `size`
 ```solidity
 let size := extcodesize(_addr)
 ```
@@ -207,7 +207,7 @@ o_code := mload(0x40)
 ```solidity
 mstore(0x40, add(o_code, and(add(add(size, 0x20), 0x1f), not(0x1f))))
 ```
-```json
+```text
 size = 45
 size + 0x20 = 77      ← 加上 bytes 头
 + 0x1f     = 108       ← 向上对齐所需的偏移
@@ -354,9 +354,9 @@ bytes memory b = new bytes(32);  // 编译器使用 mload(0x40) 分配新内存
 
 💥 结果：
 
-- b 分配的内存覆盖了 a 的数据 
-- 后续读取 a 会出现乱码或不一致
-- 更严重时可能导致合约行为错误、ABI 解析失败
+- `b` 分配的内存覆盖了 `a` 的数据 
+- 后续读取 `a` 会出现乱码或不一致
+- 更严重时可能导致合约行为错误、`ABI` 解析失败
 
 📉 可能的现象：
 

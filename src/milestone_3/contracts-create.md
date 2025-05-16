@@ -256,6 +256,8 @@ contract targetContract {
 ## 通过Nonce+Sender计算合约地址
 使用 RLP 规则模拟 普通 `CREATE` 部署的地址计算，其中： 
 - `rlpOffset` 是 `RLP` 编码中 `CREATE` 地址的固定前缀 
+  - 0xd6 = 0xc0 (short RLP prefix) + 0x16 (length of: 0x94 ++ proxy ++ 0x01). 
+  - 0x94 = 0x80 + 0x14 (0x14 = the length of an address, 20 bytes, in hex).
 - `sender` 是部署者地址 
 - `rlpNonce` 是递增 `nonce`
 
@@ -310,3 +312,6 @@ contract FindSC {
   }
 }
 ```
+
+## Reference
+[https://github.com/Vectorized/solady/blob/main/src/utils/SSTORE2.sol](https://github.com/Vectorized/solady/blob/main/src/utils/SSTORE2.sol)
