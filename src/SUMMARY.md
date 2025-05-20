@@ -3,9 +3,9 @@
 [Solidity learn books](README.md)
 
 # Milestone 0. Solidity Data
-- [data-variables](./milestone_0/variables.md)
-- [variables-scope](./milestone_0/variables-scope.md)
-- [variables-copy](./milestone_0/variables-copy.md)
+- [data-variables](./milestone_0/solidity数据变量.md)
+- [variables-scope](./milestone_0/solidity数据存储.md)
+- [variables-copy](./milestone_0/solidity数据拷贝.md)
 - [data-enum](./milestone_0/data-enum.md)
 - [data-bytes-string](./milestone_0/data-bytes-string.md)
 - [data-mapping](./milestone_0/data-mapping.md)
