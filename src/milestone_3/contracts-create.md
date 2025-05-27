@@ -84,6 +84,13 @@
     - `return` 语句：把 `runtime code` 返回给链
 - 在相同链上通过相同的 `salt` 和 `合约构造函数的代码`，就可以实现同地址合约的提前使用
 
+```solidity
+  bytes internal constant PROXY_CHILD_BYTECODE = hex"67_36_3d_3d_37_36_3d_34_f0_3d_52_60_08_60_18_f3";
+
+  //                        KECCAK256_PROXY_CHILD_BYTECODE = keccak256(PROXY_CHILD_BYTECODE);
+  bytes32 internal constant KECCAK256_PROXY_CHILD_BYTECODE = 0x21c35dbe1b344a2488cf3321d6ce542f8e9f305544ff09e4993a62319a497c1f;
+```
+
   | 使用对象                              | 是否正确？ | 原因                                      |
     |-----------------------------------| ----- | --------------------------------------- |
   | `type(MyContract).creationCode`   | ✅ 正确  | 包含 constructor 和返回逻辑，完整的 `init code`    |
@@ -102,51 +109,55 @@
 pragma solidity ^0.8.20;
 
 // This is the older way of doing it using assembly
-contract CreateNewContract {
+contract AddrDeployer {
     event Create2Created(address addr, bytes32 salt);
     event CreateCreated(address addr);
 
     // 1. Deploy the contract by CREATE
-    function Create(address _owner, uint256 _num) external payable {
-        bytes memory bytecode = getBytecode(_owner, _num);
-        _create(bytecode, "");
-    }
-
-    // 2. Deploy the contract by CREATE2
-    function Create2(
-        address _owner,
-        uint256 _num,
-        bytes32 salt
-    ) external payable {
-        bytes memory bytecode = getBytecode(_owner, _num);
-        _create(bytecode, salt);
-    }
-
-    function _create(bytes memory bytecode, bytes32 salt) internal {
-        address addr;
-        if (keccak256(abi.encode(salt)) == keccak256("")) {
-            /*
-        NOTE: How to call create
+    function Create(address _owner, uint256 _num)
+        external
+        payable
+        returns (address addr)
+    {
+        bytes memory bytecode = abi.encodePacked(
+            type(contractWithConstructor).creationCode,
+            abi.encode(_owner, _num)
+        );
+        /*       NOTE: How to call create
         create(v, p, n)
         create new contract with code at memory p to p + n
         and send v wei
         and return the new address
         */
-            assembly {
-                addr := create(
-                    callvalue(), // wei sent with current call
-                    // Actual code starts after skipping the first 32 bytes
-                    add(bytecode, 0x20),
-                    mload(bytecode) // Load the size of code contained in the first 32 bytes
-                )
+        assembly {
+            addr := create(
+                callvalue(), // wei sent with current call
+                // Actual code starts after skipping the first 32 bytes
+                add(bytecode, 0x20),
+                mload(bytecode) // Load the size of code contained in the first 32 bytes
+            )
 
-                if iszero(extcodesize(addr)) {
-                    revert(0, 0)
-                }
+            if iszero(extcodesize(addr)) {
+                revert(0, 0)
             }
-            emit CreateCreated(addr);
-        } else {
-            /*
+        }
+        emit CreateCreated(addr);
+    }
+
+    // 2. Deploy the contract by CREATE2
+    function Create2(address _owner, uint256 _num)
+        external
+        payable
+        returns (address addr)
+    {
+        bytes memory bytecode = abi.encodePacked(
+            type(contractWithConstructor).creationCode,
+            abi.encode(_owner, _num)
+        );
+
+        bytes32 salt = keccak256(abi.encode(_owner, _num));
+
+        /*
         NOTE: How to call create2
         create2(v, p, n, s)
         create new contract with code at memory p to p + n
@@ -155,90 +166,90 @@ contract CreateNewContract {
         where new address = first 20 bytes of keccak256(0xff + address(this) + s + keccak256(mem[p…(p+n)))
               s = big-endian 256-bit value
         */
-            assembly {
-                addr := create2(
-                    callvalue(), // wei sent with current call
-                    // Actual code starts after skipping the first 32 bytes
-                    add(bytecode, 0x20),
-                    mload(bytecode), // Load the size of code contained in the first 32 bytes
-                    salt // Salt from function arguments
-                )
+        assembly {
+            addr := create2(
+                callvalue(), // wei sent with current call
+                // Actual code starts after skipping the first 32 bytes
+                add(bytecode, 0x20),
+                mload(bytecode), // Load the size of code contained in the first 32 bytes
+                salt // Salt from function arguments
+            )
 
-                if iszero(extcodesize(addr)) {
-                    revert(0, 0)
-                }
-                // if no address was created, and returndata is not empty, bubble revert
-                if and(iszero(addr), not(iszero(returndatasize()))) {
-                    let p := mload(0x40)
-                    returndatacopy(p, 0, returndatasize())
-                    revert(p, returndatasize())
-                }
+            if iszero(extcodesize(addr)) {
+                revert(0, 0)
             }
-            emit Create2Created(addr, salt);
+            // if no address was created, and returndata is not empty, bubble revert
+            if and(iszero(addr), not(iszero(returndatasize()))) {
+                let p := mload(0x40)
+                returndatacopy(p, 0, returndatasize())
+                revert(p, returndatasize())
+            }
         }
+        emit Create2Created(addr, salt);
     }
 
     // 3. Deploy the create contract by new
-    function NewCreate(address _owner, uint256 _num)
+    // 合约没有 payable 修饰的构造函数，因此不支持在部署的时候，传递非零的msg.value
+    function deploy() public payable returns (address) {
+        return address(new contractWithoutConstructor());
+    }
+
+    function deployWithValue(address _owner, uint256 _num)
         public
         payable
         returns (address)
     {
-        return address(new targetContract{value: msg.value}(_owner, _num));
-    }
-
-    // 4. Deploy the create2 contract by new
-    function NewCreate2(
-        address _owner,
-        uint256 _num,
-        bytes32 salt
-    ) public payable returns (address) {
-        // This syntax is a newer way to invoke create2 without assembly, you just need to pass salt
-        // https://docs.soliditylang.org/en/latest/control-structures.html#salted-contract-creations-create2
         return
             address(
-                new targetContract{salt: salt, value: msg.value}(_owner, _num)
+                new contractWithConstructor{value: msg.value}(_owner, _num)
             );
     }
 
-    // Get bytecode of contract to be deployed
-    // NOTE: _owner and _num are arguments of the targetContract's constructor
-    function getBytecode(address _owner, uint256 _num)
-        internal
-        pure
-        returns (bytes memory)
+    // 4. Deploy the create2 contract by new
+
+    function deploy2(address _owner, uint256 _num)
+        external
+        returns (address pool)
     {
-        bytes memory bytecode = type(targetContract).creationCode;
-        return abi.encodePacked(bytecode, abi.encode(_owner, _num));
+        pool = address(
+            new contractWithConstructor{
+                salt: keccak256(abi.encode(_owner, _num))
+            }(_owner, _num)
+        );
     }
 
     // Compute the address of the contract to be deployed
     // NOTE: _salt is a random number used to create an address
-    function getAddress(
-        address _owner,
-        uint256 _num,
-        bytes32 salt
-    ) external view returns (address) {
-        bytes memory _bytecode = type(targetContract).creationCode;
+    function computeAddress(address _owner, uint256 _num)
+        external
+        view
+        returns (address pool)
+    {
         bytes memory bytecode = abi.encodePacked(
-            _bytecode,
+            type(contractWithConstructor).creationCode,
             abi.encode(_owner, _num)
         );
-        bytes32 hash = keccak256(
-            abi.encodePacked(
-                bytes1(0xff),
-                address(this),
-                salt,
-                keccak256(bytecode)
+
+        bytes32 POOL_INIT_CODE_HASH = keccak256(bytecode);
+        // require(key.token0 < key.token1);
+        pool = address(
+            uint160(
+                uint256(
+                    keccak256(
+                        abi.encodePacked(
+                            hex"ff",
+                            address(this),
+                            keccak256(abi.encode(_owner, _num)),
+                            POOL_INIT_CODE_HASH
+                        )
+                    )
+                )
             )
         );
-
-        // NOTE: cast last 20 bytes of hash to address
-        return address(uint160(uint256(hash)));
     }
 }
 
-contract targetContract {
+contract contractWithConstructor {
     address public owner;
     uint256 public num;
 
@@ -250,6 +261,25 @@ contract targetContract {
     function getBalance() public view returns (uint256) {
         return address(this).balance;
     }
+}
+
+contract contractWithoutConstructor {
+    address public owner;
+    // uint256 public num;
+    event ChangeOwnerEvent();
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
+    function setOwner(address _addr) external {
+        owner = _addr;
+        emit ChangeOwnerEvent();
+    }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 }
 ```
 
