@@ -19,6 +19,8 @@ Alright, let's get started!
 2. Page in <https://yuhuajing.github.io/solidity-book/>
 
 ## Table of Contents
+- Backgroud
+  1. 理解以太坊虚拟机
 - Milestone 0. Solidity Data
   1. data-bytes
   2. data-enum

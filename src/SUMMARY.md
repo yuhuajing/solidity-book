@@ -1,7 +1,5 @@
 # Summary
-
 [Solidity learn books](README.md)
-
 # Backgroud
 - [理解以太坊虚拟机](./background/EVMs.md)
 # Milestone 0. Solidity Data
