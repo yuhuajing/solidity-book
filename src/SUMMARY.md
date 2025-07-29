@@ -2,6 +2,8 @@
 
 [Solidity learn books](README.md)
 
+# Backgroud
+- [理解以太坊虚拟机](./background/EVMs.md)
 # Milestone 0. Solidity Data
 - [data-variables](./milestone_0/solidity数据变量.md)
 - [variables-scope](./milestone_0/solidity数据存储.md)

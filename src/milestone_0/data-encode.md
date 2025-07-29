@@ -150,6 +150,31 @@ plays(string[2])//play(["Eze","Sunday"])
 Examples-嵌套数组的编码，传参编码的规则：
 - 直接按照参数顺序，按照动态数组的编码规则依次进行编码
 ![](../common_knowledge/images/encode-nexted-array.png)
+
+### Seaport Return String
+[Seaport](https://github.com/ProjectOpenSea/seaport-core/blob/main/src/Seaport.sol#L102)返回 `Seaport` 的函数：
+```solidity
+    function _name() internal pure override returns (string memory) {
+        // Return the name of the contract.
+        assembly {
+            mstore(0x20, 0x20)
+            mstore(0x47, 0x07536561706f7274)
+            return(0x20, 0x60)
+        }
+    }
+```
+我们知道在 `slot` 存储静态类型数据的时候采用高位补0的方式，也就是全部数据放在低位存储
+
+`string/bytes` 类型的数据高位存储，那么采用 `start + len` 大小的偏移量存储 `len+data` 静态数据的话：
+- 静态数据全部低位存储
+- 由于偏移量，当前`slot` 只会存储 `len`
+- 同时，`data` 数据直接存储在了下一 `slot` 的高位
+
+Examples-`TKN`:
+
+将数据长度和真实数据作为静态数据直接存储，由于偏移量的原因，节省一步 `mstore`.
+![](./images/seaport-encode-string.png)
+
 ### abi.encodePacked
 - 在数据顺序上进行最低空间编码，省略编码中的填充0
 - 动态类型数据只保留数据，不填充长度字段
