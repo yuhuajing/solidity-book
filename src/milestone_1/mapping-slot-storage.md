@@ -95,6 +95,68 @@ contract MyMapping {
 }
 ```
 ![](./images/mapping_slot_value.png)
+#### Seaport获取 Mapping值
+```solidity
+// error ChannelClosed(address channel)
+uint256 constant ChannelClosed_error_signature = (
+    0x93daadf200000000000000000000000000000000000000000000000000000000
+);
+uint256 constant ChannelClosed_error_ptr = 0x00;
+uint256 constant ChannelClosed_channel_ptr = 0x4;
+uint256 constant ChannelClosed_error_length = 0x24;
+
+// For the mapping:
+// mapping(address => bool) channels
+// The position in storage for a particular account is:
+// keccak256(abi.encode(account, channels.slot))
+uint256 constant ChannelKey_channel_ptr = 0x00;
+uint256 constant ChannelKey_slot_ptr = 0x20;
+uint256 constant ChannelKey_length = 0x40;
+
+contract Conduit  {
+  // Track the status of each channel.
+  mapping(address => bool) private _channels;
+
+  /**
+   * @notice Ensure that the caller is currently registered as an open channel
+     *         on the conduit.
+     */
+  modifier onlyOpenChannel() {
+    // Utilize assembly to access channel storage mapping directly.
+    assembly {
+    // Write the caller to scratch space.
+      mstore(ChannelKey_channel_ptr, caller())
+
+    // Write the storage slot for _channels to scratch space.
+      mstore(ChannelKey_slot_ptr, _channels.slot)
+
+    // Derive the position in storage of _channels[msg.sender]
+    // and check if the stored value is zero.
+      if iszero(
+        sload(keccak256(ChannelKey_channel_ptr, ChannelKey_length))
+      ) {
+      // The caller is not an open channel; revert with
+      // ChannelClosed(caller). First, set error signature in memory.
+        mstore(ChannelClosed_error_ptr, ChannelClosed_error_signature)
+
+      // Next, set the caller as the argument.
+        mstore(ChannelClosed_channel_ptr, caller())
+
+      // Finally, revert, returning full custom error with argument
+      // data in memory.
+      // revert(abi.encodeWithSignature(
+      //     "ChannelClosed(address)", caller()
+      // ))
+        revert(ChannelClosed_error_ptr, ChannelClosed_error_length)
+      }
+    }
+
+    // Continue with function execution.
+    _;
+  }
+}
+```
+
 ### 嵌套Mapping数据存储
 - Mapping(key=>Mapping(...))
 - 多重嵌套 `mapping` 的 `slot` 存储规则
