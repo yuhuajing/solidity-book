@@ -3,6 +3,21 @@
 - `msg.sender==tx.origin`
 - `EXTCODESIZE` 读取 `code.length` 
 - `EXTCODEHASH` 读取 `code.hash`
+
+```text
+Here is some more "rare" knowledge of codesize(), extcodesize() and address(...).code.length:
+
+1) extcodesize will always return 0 when used on a contract that is currently deploying, including address(this).
+
+2) codesize returns the size of the (runtime + constructor) bytecode when called in the constructor. 
+
+This is useful if you are writing raw Huff/Yul and want to access the constructor arguments by counting backwards from the end.
+
+3) codesize returns the size of the runtime bytecode  (not including constructor bytecode) when called outside the constructor.
+
+4) under the hood (for Solidity) address(this).code.length uses extcodesize(), not codesize()
+```
+
 ## msg.sender==tx.origin
 - `tx.origin` 是当前交易的签名地址
 - `msg.sender` 是当前 `EVM` 执行环境中的交易发送地址
@@ -388,3 +403,12 @@ and(add(add(size, 0x20), 0x1f), not(0x1f))
   | --------- | ---------------- |
   | `+ 0x1f`  | 让非32的倍数“凑满一整块”   |
   | `& ~0x1f` | 清除低5位，确保是32的倍数对齐 |
+
+## Preference
+[https://github.com/OpenZeppelin/openzeppelin-contracts/blob/dc9c900cb4dd74d991bc18a976c93646b8355970/contracts/utils/cryptography/signers/SignerERC7702.sol](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/dc9c900cb4dd74d991bc18a976c93646b8355970/contracts/utils/cryptography/signers/SignerERC7702.sol)
+
+[https://github.com/OpenZeppelin/openzeppelin-contracts/issues/5676](https://github.com/OpenZeppelin/openzeppelin-contracts/issues/5676)
+
+[https://etherscan.io/tx/0xebc6f503d3c7cf9560308c8efef69a6c4a993a29224d7a4a4f13ca98d6ae0621](https://etherscan.io/tx/0xebc6f503d3c7cf9560308c8efef69a6c4a993a29224d7a4a4f13ca98d6ae0621)
+
+[https://www.certik.com/zh-CN/resources/blog/pectras-eip-7702-redefining-trust-assumptions-of-externally-owned-accounts](https://www.certik.com/zh-CN/resources/blog/pectras-eip-7702-redefining-trust-assumptions-of-externally-owned-accounts)

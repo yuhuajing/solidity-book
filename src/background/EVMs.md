@@ -44,6 +44,70 @@
 合约存储的读写成本远高于内存，因为交易执行后，所有以太坊节点都必须相应地更新合约的存储树。
 
 ![](./images/ccwallet.png)
+
+
+## Transient Storage
+[https://soliditylang.org/blog/2024/01/26/transient-storage/](https://soliditylang.org/blog/2024/01/26/transient-storage/) 引入 `key-value` 临时存储的数据，数据只在当前交易环境有效。
+
+[https://eips.ethereum.org/EIPS/eip-1153](https://eips.ethereum.org/EIPS/eip-1153) 提出 `Tload/Tstore` 关键字，用于临时存储数据。
+- 在重入防范中使用临时存储代替 `Sstore/Sload` 存储的全局关键字，不涉及 `disk-access`, 节省 `gas`
+- `Tstore` 会临时存储数据， `staticCall` 会引起异常
+
+### Solidity Examples
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract DoubleBufferContract {
+    uint256[] bufferA;
+    uint256[] bufferB;
+
+    modifier nonreentrant(bytes32 key) {
+        assembly {
+            if tload(key) {
+                revert(0, 0)
+            }
+            tstore(key, 1)
+        }
+        _;
+        assembly {
+            tstore(key, 0)
+        }
+    }
+
+    bytes32 constant A_LOCK = keccak256("a");
+    bytes32 constant B_LOCK = keccak256("b");
+
+    function pushA() public payable nonreentrant(A_LOCK) {
+        bufferA.push(msg.value);
+    }
+
+    function popA() public nonreentrant(A_LOCK) {
+        require(bufferA.length > 0);
+
+        (bool success, ) = msg.sender.call{value: bufferA[bufferA.length - 1]}(
+            ""
+        );
+        require(success);
+        bufferA.pop();
+    }
+
+    function pushB() public payable nonreentrant(B_LOCK) {
+        bufferB.push(msg.value);
+    }
+
+    function popB() public nonreentrant(B_LOCK) {
+        require(bufferB.length > 0);
+
+        (bool success, ) = msg.sender.call{value: bufferB[bufferB.length - 1]}(
+            ""
+        );
+        require(success);
+        bufferB.pop();
+    }
+}
+```
+
 ## Reference
 [https://ethereum.org/en/developers/docs/intro-to-ethereum/](https://ethereum.org/en/developers/docs/intro-to-ethereum/)
 

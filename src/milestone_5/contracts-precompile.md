@@ -1,4 +1,8 @@
 # 预编译合约（0x01 to 0x09）
+
+预编译合约不是以 solidity 编写并且编译成 bytecodes 的合约代码，而是被编码到 Ethereum Procotol 中的函数功能，
+因此调用 Precompile 合约不涉及底层合约间的调用（不涉及存储空间的读写，节省合约调用 gas），EVM 直接从协议代码中执行
+
 1. Elliptic curve digital signature recovery
 - 0x01: ecRecover
   - 签名验证失败会返回 `address(0)` ,不会 `revert` 整笔交易
@@ -281,4 +285,6 @@ contract MoxExp {
   - ECC 运算用于[零知识证明](https://www.rareskills.io/zk-book)和 [TornadoCash](../milestone_1/tornado-cash.md)
 
 ## Preference
-https://www.evm.codes/precompiled?fork=grayGlacier
+[https://www.evm.codes/precompiled?fork=grayGlacier](https://www.evm.codes/precompiled?fork=grayGlacier)
+
+[https://www.nervos.org/knowledge-base/what_are-precompiles_(explainCKBot)](https://www.nervos.org/knowledge-base/what_are-precompiles_(explainCKBot))

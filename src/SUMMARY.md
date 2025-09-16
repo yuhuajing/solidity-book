@@ -44,8 +44,9 @@
 - [call](./milestone_5/contracts-call.md)
 - [delegatecall](./milestone_5/contracts-delegatecall.md)
 - [staticall](./milestone_5/contracts-staticcall.md)
-- [precompile](./milestone_5/contracts-precompile.md)
+- [预编译合约](./milestone_5/contracts-precompile.md)
 # Milestone 6. Sollidity advanced
 - [merkle tree](./milestone_6/merkle-proof-validation.md)
 - [ecdsa signature](./milestone_6/signature-ECDSA-validation.md)
 - [common-mistake](./milestone_6/common-mistakes.md)
+- [ERC7702](./milestone_6/ERC7702.md)
