@@ -26,162 +26,110 @@
 
 ![](./images/proxy-implementation-slot.png)
 ## 最简代理合约（不可升级clone）
-[最小代理](https://www.rareskills.io/post/eip-1167-minimal-proxy-standard-with-initialization-clone-pattern)基于[EIP1167](https://eips.ethereum.org/EIPS/eip-1167),由三部分组成:
-- `initcode`,拷贝 `calldata` 数据
-- 指定逻辑合约地址
-- 执行 `delegateCall`,返回执行结果或者失败 `revert`
-
 ![](./images/minimum-proxy-clone.png)
-### examples
+
+[最小代理](https://www.rareskills.io/post/eip-1167-minimal-proxy-standard-with-initialization-clone-pattern)基于[EIP1167](https://eips.ethereum.org/EIPS/eip-1167),由三部分组成:
+- 最开始的10 bytes 表示 `initcode`，用来部署最小代理合约
+### InitCodes
+```text
+// copy the runtime bytecode of the minimal proxy 
+// starting from offset 10, and save it to the blockchain
+
+3d [00] RETURNDATASIZE	
+60 [01] PUSH1    2d
+80 [03] DUP1	
+
+//push 10 - offset to copy runtime code from
+60 [04] PUSH1    0a     
+3d [06] RETURNDATASIZE	
+
+// copy the runtime code and save it to the blockchain
+39 [07] CODECOPY // 表示偏移量为0x0a = 10 bytes, 拷贝 0x2d = 45bytes 的 runtimeCodes
+81 [08] DUP2	
+f3 [09] RETURN
+```
+### RuntimeCodes
+```text
+|           0x00000000      36             calldatasize          cds
+|           0x00000001      3d             returndatasize        0 cds
+|           0x00000002      3d             returndatasize        0 0 cds
+|           0x00000003      37             calldatacopy          
+|           0x00000004      3d             returndatasize        0
+|           0x00000005      3d             returndatasize        0 0 
+|           0x00000006      3d             returndatasize        0 0 0
+|           0x00000007      36             calldatasize          cds 0 0 0
+|           0x00000008      3d             returndatasize        0 cds 0 0 0
+|           0x00000009      73bebebebebe.  push20 0xbebebebe     0xbebe 0 cds 0 0 0
+|           0x0000001e      5a             gas                   gas 0xbebe 0 cds 0 0 0
+|           0x0000001f      f4             delegatecall          suc 0
+|           0x00000020      3d             returndatasize        rds suc 0
+|           0x00000021      82             dup3                  0 rds suc 0
+|           0x00000022      80             dup1                  0 0 rds suc 0
+|           0x00000023      3e             returndatacopy        suc 0
+|           0x00000024      90             swap1                 0 suc
+|           0x00000025      3d             returndatasize        rds 0 suc
+|           0x00000026      91             swap2                 suc 0 rds
+|           0x00000027      602b           push1 0x2b            0x2b suc 0 rds
+|       ,=< 0x00000029      57             jumpi                 0 rds
+|       |   0x0000002a      fd             revert
+|       `-> 0x0000002b      5b             jumpdest              0 rds
+\           0x0000002c      f3             return
+```
+
+其中，`runtime` `bytecodes` `363d3d373d3d3d363d73bebebebebebebebebebebebebebebebebebebebe5af43d82803e903d91602b57fd5bf3` 占据 45 `bytes`
+
+合约创建允许的最大为 24576 `bytes`，因此在创建代理合约时的传参 `size` 必须小于 24531
+
 ```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
-import "@openzeppelin/contracts/utils/Create2.sol";
-
-contract Factory {
-    error AccountCreationFailed();
-    error InvalidSignerInput();
-    error InvalidOwnerInput();
-    error DuplicatedAddress();
-    event AccountCreated(address indexed _account);
-
-    address[] public userwallet;
-    address public implementation;
-    address public manager;
-    address public owner;
-    mapping(string => address) identiWallet;
-
-    function getWalletLength() public view returns (uint256) {
-        return userwallet.length;
-    }
-
-    constructor(address _manager, address _implement) payable {
-        owner = msg.sender;
-        manager = _manager;
-        implementation = _implement;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "NOT_OWNER");
-        _;
-    }
-
-    modifier onlyManager() {
-        require(msg.sender == manager, "NOT_OWNER");
-        _;
-    }
-
-    function updateOwner(address newOwner) external onlyOwner {
-        require(
-            newOwner != address(0) && newOwner != owner,
-            "DUP/INVALID_NEWOWNER"
-        );
-        owner = newOwner;
-    }
-
-    function updateManager(address newManager) external onlyOwner {
-        require(
-            newManager != address(0) && newManager != manager,
-            "DUP/INVALID_NEWMANAGER"
-        );
-        manager = newManager;
-    }
-
-    function updateImpl(address newImpl) external onlyOwner {
-        require(
-            newImpl != address(0) && newImpl != implementation,
-            "DUP/INVALID_NEWIMPL"
-        );
-        implementation = newImpl;
-    }
-
-    function getCreationCode(bytes32 _identifier)
-    internal
-    view
-    returns (bytes memory)
-    {
+    function _cloneCodeWithImmutableArgs(
+        address implementation,
+        bytes memory args
+    ) private pure returns (bytes memory) {
+        if (args.length > 24531) revert CloneArgumentsTooLong();
         return
             abi.encodePacked(
-            hex"3d60ad80600a3d3981f3363d3d373d3d3d363d73",
-            implementation,
-            hex"5af43d82803e903d91602b57fd5bf3",
-            abi.encode(_identifier)
-        );
+                hex"61",
+                uint16(args.length + 45),
+                hex"3d81600a3d39f3363d3d373d3d3d363d73",
+                implementation,
+                hex"5af43d82803e903d91602b57fd5bf3",
+                args
+            );
     }
+```
 
-    function createAccount(
-        address _owner,
-        address _signer,
-        string memory _identifier
-    ) external onlyManager returns (address _account) {
-        (bytes memory code, bytes memory salt) = checkAccount(
-            _owner,
-            _signer,
-            _identifier
-        );
+### examples
 
-        assembly {
-            _account := create2(0, add(code, 0x20), mload(code), salt)
-        }
-        if (_account == address(0)) revert AccountCreationFailed();
-        emit AccountCreated(_account);
-        (bool success, bytes memory result) = _account.call(
-            abi.encodeWithSignature(
-                "initData(address,address,address)",
-                _owner,
-                manager,
-                _signer
-            )
-        );
-        if (!success) {
-            assembly {
-                revert(add(result, 32), mload(result))
-            }
-        }
-        identiWallet[_identifier] = _account;
-        userwallet.push(_account);
+```solidity
+contract CloneFactory {
+
+  function createClone(address target) internal returns (address result) {
+    bytes20 targetBytes = bytes20(target);
+    assembly {
+      let clone := mload(0x40)
+      mstore(clone, 0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000000000000000000000)
+      mstore(add(clone, 0x14), targetBytes)
+      mstore(add(clone, 0x28), 0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000)
+      result := create(0, clone, 0x37) //0x14 + 0x14 + 0x0f
     }
+  }
 
-    function checkAccount(
-        address _owner,
-        address _signer,
-        string memory _identifier
-    ) internal view returns (bytes memory code, bytes memory salt) {
-        if (_owner == address(0)) revert InvalidOwnerInput();
-        if (_signer == address(0)) revert InvalidSignerInput();
-        require(
-            identiWallet[_identifier] == address(0),
-            "ONLY_ALLOW_ONE_WALLET"
-        );
-        code = getCreationCode(convertStringToByte32(_identifier));
-        salt = abi.encode(_identifier, _owner, _signer);
-        address _account = Create2.computeAddress(
-            bytes32(salt),
-            keccak256(code)
-        );
-        if (_account.code.length != 0) revert DuplicatedAddress();
-    }
+  function isClone(address target, address query) internal view returns (bool result) {
+    bytes20 targetBytes = bytes20(target);
+    assembly {
+      let clone := mload(0x40)
+      mstore(clone, 0x363d3d373d3d3d363d7300000000000000000000000000000000000000000000)
+      mstore(add(clone, 0xa), targetBytes)
+      mstore(add(clone, 0x1e), 0x5af43d82803e903d91602b57fd5bf30000000000000000000000000000000000)
 
-    function account(
-        address _owner,
-        address _signer,
-        string memory _identifier
-    ) external view returns (address _account) {
-        bytes memory code = getCreationCode(convertStringToByte32(_identifier));
-        bytes memory salt = abi.encode(_identifier, _owner, _signer);
-        _account = Create2.computeAddress(bytes32(salt), keccak256(code));
-        return _account;
+      let other := add(clone, 0x40)
+      extcodecopy(query, other, 0, 0x2d)
+      result := and(
+        eq(mload(clone), mload(other)),
+        eq(mload(add(clone, 0xd)), mload(add(other, 0xd)))
+      )
     }
-
-    function convertStringToByte32(string memory _texte)
-    internal
-    pure
-    returns (bytes32 result)
-    {
-        assembly {
-            result := mload(add(_texte, 32))
-        }
-    }
+  }
 }
 ```
 ## 简单可升级代理合约实现
