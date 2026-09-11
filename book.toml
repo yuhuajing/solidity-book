@@ -1,15 +1,14 @@
 [book]
 authors = ["HuajingYu"]
 language = "en"
-multilingual = false
 src = "src"
 title = "Solidity Development Book"
-description = "A book that teaches how to learn Solidity smart contracts."
+description = "A hands-on, EVM-first guide to Solidity smart-contract development on Ethereum — from syntax and storage layout to contract creation, calls, proxies, and advanced security."
 
 [output.html]
-curly-quotes = true
+smart-punctuation = true
 git-repository-url = "https://github.com/yuhuajing/solidity-book"
-git-repository-icon = "fa-github"
+git-repository-icon = "fab-github"
 edit-url-template = "https://github.com/yuhuajing/solidity-book/edit/main/{path}"
 cname = "solidity-book.com"
 
