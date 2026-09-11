@@ -38,7 +38,7 @@ Examples-静态参数结构体:
 2. 函数需要两个传参，第一个为全是静态参数的结构体，第二个为静态地址
 3. 按照传参顺序，从第一行开始，直接按照结构体内部参数的定义顺序编码内部参数，每个参数补位 `256 bit`
 4. 静态地址编码到全部结构体参数后面
-![](.images/encode-static-struct.png)
+![](./images/encode-static-struct.png)
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
@@ -95,11 +95,11 @@ Examples-动态参数结构体:
 0000000000000000000000000000000000000000000000000000000000000003 //结构体数据动态类型的数据长度
 4578650000000000000000000000000000000000000000000000000000000000 //结构体数据动态数据
 ```
-![](../common_knowledge/images/encode-dynamic-multiple-struct.png)
+![](./images/encode-dynamic-multiple-struct.png)
 Examples-静态参数的固定大小数组，传参编码的规则：
 1. 静态参数的固定大小数组作为静态参数编码[variables.md](variables.md)
 2. 按照传参顺序，直接依次编码静态数据传参
-![](../common_knowledge/images/encode-static-array.png)
+![](./images/encode-static-array.png)
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
@@ -143,13 +143,13 @@ Examples-动态参数的固定大小数组，传参编码的规则：
 ```solidity
 plays(string[2])//play(["Eze","Sunday"])
 ```
-![](../common_knowledge/images/encode-static-array-staticdata.png)
+![](./images/encode-static-array-staticdata.png)
 非固定大小的数组传参`string[]`，需要将数组大小一起编码:
-![](../common_knowledge/images/encode-dynamic-array-data.png)
+![](./images/encode-dynamic-array-data.png)
 
 Examples-嵌套数组的编码，传参编码的规则：
 - 直接按照参数顺序，按照动态数组的编码规则依次进行编码
-![](../common_knowledge/images/encode-nexted-array.png)
+![](./images/encode-nexted-array.png)
 
 ### Seaport Return String
 [Seaport](https://github.com/ProjectOpenSea/seaport-core/blob/main/src/Seaport.sol#L102)返回 `Seaport` 的函数：

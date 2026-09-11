@@ -1,6 +1,6 @@
 # Summary
 [Solidity learn books](README.md)
-# Backgroud
+# Background
 - [理解以太坊虚拟机](./background/EVMs.md)
 # Milestone 0. Solidity Data
 - [data-variables](./milestone_0/solidity数据变量.md)
@@ -11,21 +11,21 @@
 - [data-mapping](./milestone_0/data-mapping.md)
 - [data-foreach](./milestone_0/data-foreach.md)
 - [data-encode](./milestone_0/data-encode.md)
-# Milestone 1. Solidity functions
+# Milestone 1. Solidity variables
 - [static-slot-storage](./milestone_1/static-slot-storage.md)
 - [mapping-slot-storage](./milestone_1/mapping-slot-storage.md)
 - [arrays-slot-storage](./milestone_1/arrays-slot-storage.md)
 - [string/bytes-slot-storage](./milestone_1/string-slot-storage.md)
 - [struct-slot-storage](./milestone_1/struct-slot-storage.md)
 - [variables-user-defined-type](./milestone_1/variables-user-defined-types.md)
-# Milestone 2. Solidity variables
+# Milestone 2. Solidity functions
 - [Functions](./milestone_2/functions.md)
 - [Functions-constructor](./milestone_2/functions-constructor.md)
 - [Functions modifier](./milestone_2/functions-modifier.md)
 - [Functions selector](./milestone_2/functions-selector.md)
 - [Functions sendValue](./milestone_2/functions-sendValue.md)
 - [errors check](./milestone_2/errors-check.md)
-# Milestone 3. Sollidity contracts create
+# Milestone 3. Solidity contracts create
 - [合约导包](./milestone_3/contracts-import.md)
 - [合约创建-create/create2](./milestone_3/contracts-create.md)
 - [合约创建-create3](./milestone_3/contracts-create3.md)
@@ -34,19 +34,23 @@
 - [获取合约字节码](./milestone_3/contracts-getcodes.md)
 - [合约字节码存储SSTORE2](./milestone_3/contracts-sstore2.md)
 - [合约事件](./milestone_3/contracts-event.md)
-# Milestone 4: Sollidity contracts type
+# Milestone 4. Solidity contracts type
 - [contracts-interface](./milestone_4/contracts-interface.md)
 - [contracts-library](./milestone_4/contracts-library.md)
 - [contracts-abstract](./milestone_4/contracts-abstract.md)
 - [contracts-inherite](./milestone_4/contracts-inherite.md)
 - [contracts-proxy](./milestone_4/contracts-proxy.md)
-# Milestone 5. Sollidity contracts call
+# Milestone 5. Solidity contracts call
 - [call](./milestone_5/contracts-call.md)
 - [delegatecall](./milestone_5/contracts-delegatecall.md)
-- [staticall](./milestone_5/contracts-staticcall.md)
+- [staticcall](./milestone_5/contracts-staticcall.md)
 - [预编译合约](./milestone_5/contracts-precompile.md)
-# Milestone 6. Sollidity advanced
+# Milestone 6. Solidity advanced
 - [merkle tree](./milestone_6/merkle-proof-validation.md)
 - [ecdsa signature](./milestone_6/signature-ECDSA-validation.md)
+- [rsa signature](./milestone_6/signature-RSA-validation.md)
 - [common-mistake](./milestone_6/common-mistakes.md)
 - [ERC7702](./milestone_6/ERC7702.md)
+- [chainlink oracle](./milestone_6/chainlink-oracle.md)
+- [gas optimization](./milestone_6/gas-optimization.md)
+- [tornado cash](./milestone_6/tornado-cash.md)
